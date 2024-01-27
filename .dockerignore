@@ -1,0 +1,9 @@
+.idea
+.dockerignore
+Dockerfile
+docker-compose.yml
+dist
+node_modules
+test
+coverage
+npm-debug.log
