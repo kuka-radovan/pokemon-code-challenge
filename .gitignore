@@ -1,6 +1,9 @@
-# compiled output
+# Compiled output
 /dist
 /node_modules
+
+# Environment variables
+.env
 
 # Logs
 logs
@@ -11,7 +14,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# database
+# Database
 /pgdata
 
 # OS
