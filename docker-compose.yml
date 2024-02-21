@@ -13,8 +13,8 @@ services:
       - ./pgdata:/var/lib/postgresql/data
     ports:
       - ${DB_PORT}:5432
-#    expose:
-#      - ${DB_PORT}
+    expose:
+      - ${DB_PORT}
     networks:
       - pokemon-network
   pokemon-api:
