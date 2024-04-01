@@ -1,11 +1,11 @@
 import {
   Entity,
-  OneToMany,
+  // OneToMany,
   PrimaryKey,
   Property,
-  Collection,
+  // Collection,
 } from '@mikro-orm/core';
-import { PokemonTypeAssociation } from './PokemonTypeAssociation.entity';
+// import { PokemonTypeAssociation } from './PokemonTypeAssociation.entity';
 
 @Entity({ tableName: 'pokemon_types' })
 export class PokemonType {
@@ -15,6 +15,6 @@ export class PokemonType {
   @Property()
   name!: string;
 
-  @OneToMany(() => PokemonTypeAssociation, (association) => association.type)
-  pokemons = new Collection<PokemonTypeAssociation>(this);
+  // @OneToMany(() => PokemonTypeAssociation, (association) => association.type)
+  // pokemons = new Collection<PokemonTypeAssociation>(this);
 }

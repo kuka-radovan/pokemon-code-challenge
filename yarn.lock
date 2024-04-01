@@ -768,6 +768,14 @@
     globby "11.1.0"
     ts-morph "21.0.1"
 
+"@mikro-orm/seeder@^6.1.4":
+  version "6.1.4"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/seeder/-/seeder-6.1.4.tgz#d87a0e711eca9fadf64f20db220cb0ef36a1e87a"
+  integrity sha512-QIfZXJvaGQ93sb8eKJJTWqtu5sKQt/ToSCDuXRgUnUTGahBbwi72PjU7nsTNvWn3K9VpuMVGYPSzbDkV/anZ8w==
+  dependencies:
+    fs-extra "11.2.0"
+    globby "11.1.0"
+
 "@nestjs/cli@^10.0.0":
   version "10.3.2"
   resolved "https://registry.yarnpkg.com/@nestjs/cli/-/cli-10.3.2.tgz#42d2764ead6633e278c55d42de871b4cc1db002b"

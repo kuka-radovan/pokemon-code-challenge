@@ -3,6 +3,7 @@ import { PokemonTypeAssociationCategory } from '@common/enums/PokemonTypeAssocia
 import { PokemonType } from './PokemonType.entity';
 import { Pokemon } from './Pokemon.entity';
 
+// TODO: use Polymorphic embeddables
 @Entity({ tableName: 'pokemon_type_associations' })
 export class PokemonTypeAssociation {
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
