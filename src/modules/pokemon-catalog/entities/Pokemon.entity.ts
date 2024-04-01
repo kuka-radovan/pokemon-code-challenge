@@ -5,11 +5,13 @@ import {
   Property,
   Collection,
   OneToMany,
+  Embedded,
 } from '@mikro-orm/core';
 // import { Attack } from './Attack.entity';
 // import { Evolution } from './Evolution.entity';
 import { PokemonTypeAssociationCategory } from '@common/enums/PokemonTypeAssociationCategory';
 import { PokemonTypeAssociation } from './PokemonTypeAssociation.entity';
+import { PokemonMeasurements } from './PokemonMeasurements.entity';
 
 @Entity({ tableName: 'pokemons' })
 export class Pokemon {
@@ -43,13 +45,11 @@ export class Pokemon {
   )
   weaknesses = new Collection<PokemonTypeAssociation>(this);
 
-  // TODO: use @Embedded here
-  @Property({ type: 'jsonb' })
-  weight!: { minimum: string; maximum: string };
+  @Embedded({ object: true })
+  weight!: PokemonMeasurements;
 
-  // TODO: use @Embedded here
-  @Property({ type: 'jsonb' })
-  height!: { minimum: string; maximum: string };
+  @Embedded({ object: true })
+  height!: PokemonMeasurements;
 
   @Property({ columnType: 'float' })
   fleeRate!: number;
