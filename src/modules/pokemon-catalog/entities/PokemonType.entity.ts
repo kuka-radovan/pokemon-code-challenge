@@ -1,20 +1,19 @@
-import {
-  Entity,
-  // OneToMany,
-  PrimaryKey,
-  Property,
-  // Collection,
-} from '@mikro-orm/core';
-// import { PokemonTypeAssociation } from './PokemonTypeAssociation.entity';
+import { Entity, Enum, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { PokemonTypeCategory } from '@common/enums/PokemonTypeCategory';
+import { Type } from './Type.entity';
+import { Pokemon } from './Pokemon.entity';
 
 @Entity({ tableName: 'pokemon_types' })
 export class PokemonType {
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id: string;
 
-  @Property()
-  name!: string;
+  @ManyToOne()
+  pokemon!: Pokemon;
 
-  // @OneToMany(() => PokemonTypeAssociation, (association) => association.type)
-  // pokemons = new Collection<PokemonTypeAssociation>(this);
+  @ManyToOne()
+  type!: Type;
+
+  @Enum(() => PokemonTypeCategory)
+  category!: PokemonTypeCategory;
 }

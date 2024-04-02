@@ -1,42 +1,81 @@
 import { EntityManager } from '@mikro-orm/core';
 import { Seeder } from '@mikro-orm/seeder';
 import { Pokemon } from '../src/modules/pokemon-catalog/entities/Pokemon.entity';
+import { Type } from '../src/modules/pokemon-catalog/entities/Type.entity';
 import { PokemonType } from '../src/modules/pokemon-catalog/entities/PokemonType.entity';
-import { PokemonTypeAssociation } from '../src/modules/pokemon-catalog/entities/PokemonTypeAssociation.entity';
-import { PokemonTypeAssociationCategory } from '@common/enums/PokemonTypeAssociationCategory';
+import { Attack } from '../src/modules/pokemon-catalog/entities/Attack.entity';
+import { PokemonTypeCategory } from '@common/enums/PokemonTypeCategory';
+import { AttackCategory } from '@common/enums/AttackCategory';
 
 import * as pokemonsData from './pokemons.json';
 
+type AttackData = {
+  name: string;
+  type: string;
+  damage: number;
+};
+
 export class PokemonSeeder extends Seeder {
-  pokemons: Pokemon[] = [];
-  pokemonTypes: Map<string, PokemonType> = new Map<string, PokemonType>();
+  pokemonTypes: Map<string, Type> = new Map<string, Type>();
+  pokemonAttacks: Map<string, Attack> = new Map<string, Attack>();
 
-  createPokemonTypeAssociationsForCategory(
+  getOrCreateType(em: EntityManager, name: string): Type {
+    let type = this.pokemonTypes.get(name);
+
+    if (!type) {
+      type = em.create(Type, { name });
+      this.pokemonTypes.set(name, type);
+    }
+
+    return type;
+  }
+
+  persistPokemonTypeWithCategory(
     em: EntityManager,
-    pokeTypes: string[],
+    pokemonTypes: string[],
     pokemon: Pokemon,
-    category: PokemonTypeAssociationCategory,
-  ): PokemonTypeAssociation[] {
-    const categoryTypes = [];
+    category: PokemonTypeCategory,
+  ): PokemonType[] {
+    const categoryTypes: PokemonType[] = [];
 
-    for (const pokemonType of pokeTypes) {
-      let type = this.pokemonTypes.get(pokemonType);
-
-      if (!type) {
-        type = em.create(PokemonType, { name: pokemonType });
-        this.pokemonTypes.set(pokemonType, type);
-      }
-
-      const association = em.create(PokemonTypeAssociation, {
+    for (const pokemonType of pokemonTypes) {
+      const pokemonTypeRecord = em.create(PokemonType, {
         pokemon,
-        type,
+        type: this.getOrCreateType(em, pokemonType),
         category,
       });
 
-      categoryTypes.push(association);
+      categoryTypes.push(pokemonTypeRecord);
     }
 
     return categoryTypes;
+  }
+
+  persistPokemonAttack(
+    em: EntityManager,
+    attacks: AttackData[],
+    category: AttackCategory,
+  ): Attack[] {
+    const categoryAttacks: Attack[] = [];
+
+    for (const attack of attacks) {
+      let attackRecord = this.pokemonAttacks.get(attack.name);
+
+      if (!attackRecord) {
+        attackRecord = em.create(Attack, {
+          name: attack.name,
+          type: this.getOrCreateType(em, attack.type),
+          damage: attack.damage,
+          category,
+        });
+
+        this.pokemonAttacks.set(attack.name, attackRecord);
+      }
+
+      categoryAttacks.push(attackRecord);
+    }
+
+    return categoryAttacks;
   }
 
   async run(em: EntityManager): Promise<void> {
@@ -52,39 +91,48 @@ export class PokemonSeeder extends Seeder {
         maxHP: pokemon.maxHP,
       });
 
-      // Persist pokemon types
       newPokemon.type.add(
-        this.createPokemonTypeAssociationsForCategory(
+        this.persistPokemonTypeWithCategory(
           em,
           pokemon.types,
           newPokemon,
-          PokemonTypeAssociationCategory.TYPE,
+          PokemonTypeCategory.TYPE,
         ),
       );
 
-      // Persist weaknesses
       newPokemon.weaknesses.add(
-        this.createPokemonTypeAssociationsForCategory(
+        this.persistPokemonTypeWithCategory(
           em,
           pokemon.weaknesses,
           newPokemon,
-          PokemonTypeAssociationCategory.WEAKNESS,
+          PokemonTypeCategory.WEAKNESS,
         ),
       );
 
-      // Persist resistances
       newPokemon.resistant.add(
-        this.createPokemonTypeAssociationsForCategory(
+        this.persistPokemonTypeWithCategory(
           em,
           pokemon.resistant,
           newPokemon,
-          PokemonTypeAssociationCategory.RESISTANT,
+          PokemonTypeCategory.RESISTANT,
         ),
       );
 
-      this.pokemons.push(newPokemon);
-    }
+      newPokemon.attacks.add(
+        this.persistPokemonAttack(
+          em,
+          pokemon.attacks.fast,
+          AttackCategory.FAST,
+        ),
+      );
 
-    em.persist(this.pokemons);
+      newPokemon.attacks.add(
+        this.persistPokemonAttack(
+          em,
+          pokemon.attacks.special,
+          AttackCategory.SPECIAL,
+        ),
+      );
+    }
   }
 }

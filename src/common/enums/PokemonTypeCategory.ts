@@ -1,4 +1,4 @@
-export enum PokemonTypeAssociationCategory {
+export enum PokemonTypeCategory {
   TYPE = 'TYPE',
   WEAKNESS = 'WEAKNESS',
   RESISTANT = 'RESISTANT',
