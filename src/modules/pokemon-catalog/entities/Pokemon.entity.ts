@@ -48,9 +48,6 @@ export class Pokemon {
   @Property({ columnType: 'float' })
   fleeRate!: number;
 
-  // @OneToMany(() => Evolution, (evolution) => evolution.pokemon)
-  // evolutions = new Collection<Evolution>(this);
-
   @Property()
   maxCP: number;
 

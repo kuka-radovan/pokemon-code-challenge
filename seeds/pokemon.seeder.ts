@@ -4,8 +4,10 @@ import { Pokemon } from '../src/modules/pokemon-catalog/entities/Pokemon.entity'
 import { Type } from '../src/modules/pokemon-catalog/entities/Type.entity';
 import { PokemonType } from '../src/modules/pokemon-catalog/entities/PokemonType.entity';
 import { Attack } from '../src/modules/pokemon-catalog/entities/Attack.entity';
+import { Evolution } from '../src/modules/pokemon-catalog/entities/Evolution.entity';
 import { PokemonTypeCategory } from '@common/enums/PokemonTypeCategory';
 import { AttackCategory } from '@common/enums/AttackCategory';
+import { EvolutionRequirements } from '../src/modules/pokemon-catalog/entities/EvolutionRequirements.entity';
 
 import * as pokemonsData from './pokemons.json';
 
@@ -16,8 +18,9 @@ type AttackData = {
 };
 
 export class PokemonSeeder extends Seeder {
-  pokemonTypes: Map<string, Type> = new Map<string, Type>();
-  pokemonAttacks: Map<string, Attack> = new Map<string, Attack>();
+  evolutions = new Map<number, Evolution>();
+  pokemonTypes = new Map<string, Type>();
+  pokemonAttacks = new Map<string, Attack>();
 
   getOrCreateType(em: EntityManager, name: string): Type {
     let type = this.pokemonTypes.get(name);
@@ -78,6 +81,30 @@ export class PokemonSeeder extends Seeder {
     return categoryAttacks;
   }
 
+  persistPokemonEvolution(
+    em: EntityManager,
+    pokemon: Pokemon,
+    previousEvolutionPokemonId?: number | null,
+    evolutionRequirements?: EvolutionRequirements | null,
+  ): void {
+    const previousEvolutionRecord = previousEvolutionPokemonId
+      ? this.evolutions.get(previousEvolutionPokemonId)
+      : null;
+
+    const evolutionRecord = em.create(Evolution, {
+      pokemon,
+      previousEvolution: previousEvolutionRecord,
+      nextEvolution: null,
+      evolutionRequirements: evolutionRequirements,
+    });
+
+    this.evolutions.set(parseInt(pokemon.id, 10), evolutionRecord);
+
+    if (previousEvolutionRecord) {
+      previousEvolutionRecord.nextEvolution = evolutionRecord;
+    }
+  }
+
   async run(em: EntityManager): Promise<void> {
     for (const pokemon of pokemonsData) {
       const newPokemon = em.create(Pokemon, {
@@ -118,21 +145,30 @@ export class PokemonSeeder extends Seeder {
         ),
       );
 
-      newPokemon.attacks.add(
-        this.persistPokemonAttack(
+      newPokemon.attacks.add([
+        ...this.persistPokemonAttack(
           em,
           pokemon.attacks.fast,
           AttackCategory.FAST,
         ),
-      );
-
-      newPokemon.attacks.add(
-        this.persistPokemonAttack(
+        ...this.persistPokemonAttack(
           em,
           pokemon.attacks.special,
           AttackCategory.SPECIAL,
         ),
-      );
+      ]);
+
+      // Create evolution record for those pokemons that have at least one previous or next evolution
+      if (pokemon['Previous evolution(s)'] || pokemon.evolutions) {
+        this.persistPokemonEvolution(
+          em,
+          newPokemon,
+          pokemon['Previous evolution(s)']?.reverse()[0].id ?? null,
+          pokemon.evolutionRequirements ?? null,
+        );
+      }
     }
+
+    await em.flush();
   }
 }
